@@ -1,5 +1,15 @@
 [
     { 
+        "file": "anthem02.dlc", 
+        "title": "Гимн v2 (все звуки)",
+        "buttons": [
+            { "title": "действие 1", "action": [73,0,0,0] },
+            { "title": "действие 2", "action": [73,0,0,3] },
+            { "title": "действие 3", "action": [73,0,0,4] },
+            { "title": "действие 4", "action": [73,0,0,6] }
+        ]
+    },
+    { 
         "file": "anthem01.dlc", 
         "title": "Гимн (тест Леона)",
         "buttons": [
