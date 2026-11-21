@@ -1,5 +1,26 @@
 [
     { 
+        "file": "anthem07.dlc", 
+        "title": "Гимн: разведка для цепочки",
+        "buttons": [
+            { "title": "1", "action": [73,0,0,0] },
+            { "title": "2", "action": [73,0,0,3] },
+            { "title": "3", "action": [73,0,0,4] },
+            { "title": "4", "action": [73,0,0,6] },
+            { "title": "5", "action": [73,1,0,0] },
+            { "title": "6", "action": [73,2,0,0] },
+            { "title": "7", "action": [73,3,0,0] },
+            { "title": "8", "action": [73,4,0,0] },
+            { "title": "9", "action": [73,5,0,0] },
+            { "title": "10", "action": [73,6,0,0] },
+            { "title": "11", "action": [73,0,1,0] },
+            { "title": "12", "action": [73,0,2,0] },
+            { "title": "13", "action": [73,0,3,0] },
+            { "title": "14", "action": [73,0,4,0] },
+            { "title": "15", "action": [73,0,5,0] }
+        ]
+    },
+    { 
         "file": "anthem02.dlc", 
         "title": "Гимн СССР (рабочий)",
         "buttons": [
