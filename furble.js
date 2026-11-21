@@ -246,6 +246,20 @@ async function showSlots() {
         let what = st[i] == SLOT_ACTIVE ? 'АКТИВНО' : (st[i] == SLOT_FILLED ? 'залито' : 'недокачано/мусор');
         let li = document.createElement('li');
         li.textContent = `слот ${i}: ${name}, ${kb}, ${what} `;
+        if (st[i] == SLOT_FILLED) {
+            let a = document.createElement('button');
+            a.textContent = 'включить';
+            a.onclick = async () => {
+                let s2 = await getDLCInfo();
+                let act = s2.indexOf(SLOT_ACTIVE);
+                if (act != -1) await deactivateDLC(act);
+                await loadAndActivateDLC(i);
+                await setAntennaColor(0,255,0);
+                msg.ok(`${name} включено!`);
+                showSlots();
+            };
+            li.appendChild(a);
+        }
         if (st[i] != SLOT_ACTIVE) {
             let b = document.createElement('button');
             b.textContent = 'удалить';
@@ -365,21 +379,19 @@ async function fetchAndUploadDLC(dlcurl) {
 
     try { 
         let slots = await getDLCInfo();
-        let filledSlot = slots.indexOf(SLOT_FILLED);
         let activeSlot = slots.indexOf(SLOT_ACTIVE);
-        if (filledSlot == -1)
-            throw new Error('скачать не удалась — не заполнено ни одного слота');
-        else {
-            log('DLC было загружено в слот ' + filledSlot);
+        let filledSlot = -1, slotInfo = null;
+        for (let i = 0; i < 14; i++) {
+            if (slots[i] != SLOT_FILLED) continue;
+            let inf = await getDLCSlotInfo(i);
+            if (inf.checksum == chksumOriginal) { filledSlot = i; slotInfo = inf; break; }
         }
+        if (filledSlot == -1)
+            throw new Error('не нашёл залитое DLC в слотах (контрольная сумма не совпала)');
+        log('DLC было загружено в слот ' + filledSlot);
         if (activeSlot != -1) {
             log('деактивация старого слота ' + activeSlot);
             await deactivateDLC(activeSlot)
-        }
-        
-        let slotInfo = await getDLCSlotInfo(filledSlot);
-        if (slotInfo.checksum != chksumOriginal) {
-            throw new Error('Expected checksum of 0x' + chksumOriginal.toString(16) + ' but got 0x' + slotInfo.checksum.toString(16));
         }
         await loadAndActivateDLC(filledSlot);
         slots = await getDLCInfo();
