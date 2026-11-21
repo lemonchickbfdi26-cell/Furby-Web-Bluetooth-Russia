@@ -246,20 +246,6 @@ async function showSlots() {
         let what = st[i] == SLOT_ACTIVE ? 'АКТИВНО' : (st[i] == SLOT_FILLED ? 'залито' : 'недокачано/мусор');
         let li = document.createElement('li');
         li.textContent = `слот ${i}: ${name}, ${kb}, ${what} `;
-        if (st[i] == SLOT_FILLED) {
-            let a = document.createElement('button');
-            a.textContent = 'включить';
-            a.onclick = async () => {
-                let s2 = await getDLCInfo();
-                let act = s2.indexOf(SLOT_ACTIVE);
-                if (act != -1) await deactivateDLC(act);
-                await loadAndActivateDLC(i);
-                await setAntennaColor(0,255,0);
-                msg.ok(`${name} включено!`);
-                showSlots();
-            };
-            li.appendChild(a);
-        }
         if (st[i] != SLOT_ACTIVE) {
             let b = document.createElement('button');
             b.textContent = 'удалить';
