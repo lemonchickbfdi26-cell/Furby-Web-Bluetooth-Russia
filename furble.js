@@ -229,6 +229,51 @@ async function deleteAllDLCSlots() {
     }
 }
 
+function withTimeout(p, ms) {
+    return Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);
+}
+
+async function showSlots() {
+    let ul = document.getElementById('slot-list');
+    ul.innerHTML = '<li>читаю...</li>';
+    let st = await getDLCInfo();
+    ul.innerHTML = '';
+    for (let i = 0; i < 14; i++) {
+        let info = await withTimeout(getDLCSlotInfo(i), 3000);
+        if (st[i] == SLOT_EMPTY && !(info && info.len > 0)) continue;
+        let name = (info && info.name) ? info.name.replace(/_/g, '') : '(без имени)';
+        let kb = info && info.len ? Math.round(info.len / 1024) + ' КБ' : '0 КБ';
+        let what = st[i] == SLOT_ACTIVE ? 'АКТИВНО' : (st[i] == SLOT_FILLED ? 'залито' : 'недокачано/мусор');
+        let li = document.createElement('li');
+        li.textContent = `слот ${i}: ${name}, ${kb}, ${what} `;
+        if (st[i] != SLOT_ACTIVE) {
+            let b = document.createElement('button');
+            b.textContent = 'удалить';
+            b.onclick = async () => {
+                if (!confirm(`Удалить ${name} из слота ${i}?`)) return;
+                await withTimeout(deactivateDLC(i), 3000);
+                await withTimeout(deleteDLC(i), 5000);
+                msg.ok(`слот ${i} удалён`);
+                showSlots();
+            };
+            li.appendChild(b);
+        }
+        ul.appendChild(li);
+    }
+    if (!ul.children.length) ul.innerHTML = '<li>пусто</li>';
+}
+
+async function cleanJunkSlots() {
+    let st = await getDLCInfo();
+    for (let i = 0; i < 14; i++) {
+        if (st[i] == SLOT_EMPTY) {
+            await withTimeout(deleteDLC(i), 2000);
+        }
+    }
+    msg.ok('недокачанное убрано');
+    showSlots();
+}
+
 async function getFirmwareVersion() {
     let buf = await sendGPCmd([0xfe], [0xfe]);
     let version = buf.getUint8(1)
