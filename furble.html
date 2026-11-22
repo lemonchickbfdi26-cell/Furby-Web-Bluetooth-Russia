@@ -188,6 +188,8 @@ async function loadDLCIndex() {
         opt.textContent = dlc.title;
         dlcsel.appendChild(opt);
     }
+    // выбрал DLC в списке — сразу показываем его кнопки (для уже залитого DLC)
+    dlcsel.onchange = () => setupDLCButtons(dlcdata[dlcsel.value]);
 }
 
 async function dlcUploadClicked() {
@@ -201,7 +203,7 @@ async function dlcUploadClicked() {
 
 function setupDLCButtons(dlcParams) {
     let container = document.getElementById('dlc-actions');
-    container.childNodes.forEach(el => el.parentNode.removeChild(el));
+    container.innerHTML = '';
     dlcParams.buttons.forEach(p => {
         let button = document.createElement('button');
         button.textContent = p.title;
@@ -211,6 +213,21 @@ function setupDLCButtons(dlcParams) {
         };
         container.appendChild(button);
     });
+    chainSteps = dlcParams.chain || null;
+    if (chainSteps) {
+        let play = document.createElement('button');
+        play.textContent = '▶ спеть куплет';
+        play.onclick = () => playChain();
+        container.appendChild(play);
+        let lab = document.createElement('label');
+        let cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = chainOnTail;
+        cb.onchange = () => setChainOnTail(cb.checked);
+        lab.appendChild(cb);
+        lab.appendChild(document.createTextNode(' петь, когда дёргают за хвост'));
+        container.appendChild(lab);
+    }
 }
 
 function log2clipboard() {

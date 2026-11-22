@@ -592,8 +592,47 @@ async function checkActiveSlot() {
     }
 }
 
+// ---- цепочка (куплет гимна) по хвосту ----
+var chainSteps = null, chainBusy = false, chainOnTail = false, tailWasPulled = false, wakeLock = null;
+
+async function playChain() {
+    if (!chainSteps || chainBusy) return;
+    chainBusy = true;
+    try {
+        await setAntennaColor(255, 0, 0);
+        for (let i = 0; i < chainSteps.length; i++) {
+            let st = chainSteps[i];
+            log(`куплет: кусок ${i + 1}/${chainSteps.length}`);
+            await triggerAction.apply(null, st.action);
+            let end = performance.now() + (st.sec + 3.0) * 1000;   // 3 с «перезарядки» Фёрби
+            while (performance.now() < end) {
+                await sleep(Math.min(1000, end - performance.now()));
+                if (end - performance.now() > 300)
+                    await sendGPCmd([0x20, 0x06], NO_RESPONSE);   // «я тут», иначе связь рвётся
+            }
+        }
+        await setAntennaColor(0, 255, 0);
+    } catch (e) {
+        log('ошибка куплета: ' + e.message);
+    } finally {
+        chainBusy = false;
+    }
+}
+
+async function setChainOnTail(on) {
+    chainOnTail = on;
+    try {
+        if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+        if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+    } catch (e) { log('экран: ' + e.message); }
+    msg.ok(on ? 'дёрни за хвост!' : 'хвост выключен');
+}
+
 function onFurbySensorData(buf) {
     let state = decodeFurbyState(buf);
+    let tail = !!state.pull_tail;
+    if (tail && !tailWasPulled && chainOnTail) playChain();
+    tailWasPulled = tail;
     console.log(state);
     let ul = document.getElementById('sensor-state');
     //ul.outerHTML = '<ul></ul>';
